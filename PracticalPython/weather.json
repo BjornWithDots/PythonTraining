@@ -1,0 +1,46 @@
+{
+   "coord":{
+      "lon":12.9401,
+      "lat":57.721
+   },
+   "weather":[
+      {
+         "id":804,
+         "main":"Clouds",
+         "description":"overcast clouds",
+         "icon":"04d"
+      }
+   ],
+   "base":"stations",
+   "main":{
+      "temp":15.06,
+      "feels_like":14.37,
+      "temp_min":15.05,
+      "temp_max":15.31,
+      "pressure":995,
+      "humidity":67,
+      "sea_level":995,
+      "grnd_level":978
+   },
+   "visibility":10000,
+   "wind":{
+      "speed":3.3,
+      "deg":345,
+      "gust":6.33
+   },
+   "clouds":{
+      "all":96
+   },
+   "dt":1663336761,
+   "sys":{
+      "type":2,
+      "id":2002085,
+      "country":"SE",
+      "sunrise":1663303203,
+      "sunset":1663349191
+   },
+   "timezone":7200,
+   "id":2720501,
+   "name":"Borås",
+   "cod":200
+}
