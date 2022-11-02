@@ -1,8 +1,13 @@
 # Note you need to run 'pip install requests' to use the requests module
 import requests
 
+def read_credentials(fpath):
+    #reads first line of a path
+    fo= open(fpath, "r")
+    return fo.readline()
+
 def get_weather_desc_and_temp():
-    api_key = "f56fda96947ffd05e84ac5c38c972b4d"
+    api_key = read_credentials(f'credentials/openweathermap.txt')
     city = 'Borås'
     url = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + api_key + "&units=metric"
     request = requests.get(url)
