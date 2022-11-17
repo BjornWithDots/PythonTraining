@@ -20,6 +20,7 @@ def getnext(url):
     tags = soup('a')
     x = 1
     for tag in tags:
+        # Skip until input - pos number of links
         if x != pos:
             # print("Don't want:",(tag.get('href', None)))
             x = x + 1
@@ -29,7 +30,7 @@ def getnext(url):
         return row
         break
 
-
+# Loop for input - count number of times
 for links in range(count):
     print("Retrieving:",url)
     url = getnext(url)
