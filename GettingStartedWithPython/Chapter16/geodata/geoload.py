@@ -8,7 +8,7 @@ import sys
 
 api_key = False
 # If you have a Google Places API key, enter it here
-# api_key = 'AIzaSy___IDByT70'
+api_key = 'AIzaSyBAhlvbJUq4deZdpNjCDxubW6yIeVRBrK4'
 
 if api_key is False:
     api_key = 42
