@@ -2,7 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import cred
 import pandas as pd
-import sqlite3
+import pyodbc
 
 
 debug = 0
@@ -18,7 +18,14 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.SPOTIPY_CLIENT_ID,
 
 # print(results)
 
-conn = sqlite3.connect('trackdb.sqlite')
+cnxn_str = ("Driver={SQL Server Native Client 11.0};"
+            "Server=U34.88.195.162;"
+            "Database=DB02;"
+            "UID=Alex;"
+            "PWD=Alex123;")
+conn = pyodbc.connect(cnxn_str)
+
+#conn = pyodbc.connect('trackdb.sqlite')
 cur = conn.cursor()
 
 
