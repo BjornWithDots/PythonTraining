@@ -2,12 +2,33 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from Honor.Spotify.Credentials import cred
 import pandas as pd
-import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
+def read_credentials(fpath):
+    #reads first line of a path
+    fo = open(fpath, "r")
+    return fo.readline()
+
+credentials_file_name = 'python'
+username = credentials_file_name
+password = read_credentials(f'./credentials/{username}.txt')
+driver = '{ODBC Driver 17 for SQL Server}'
+server = '34.88.195.162'
+database = 'Spotify'
 
 debug = 0
+
 # Tells spotipy what to get
 scope = "user-read-recently-played"
+
+connection_string = f"Driver={driver};Server={server}; Database={database}; UID={username};PWD={password}"
+connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+
+sql_engine = create_engine(connection_url)
+
+conn = sql_engine.raw_connection()
+
 
 # Connection information for Spotify app setup: https://developer.spotify.com/dashboard/applications
 # https://www.section.io/engineering-education/spotify-python-part-1/
@@ -16,48 +37,44 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.SPOTIPY_CLIENT_ID,
                                                redirect_uri=cred.SPOTIPY_REDIRECT_URI,
                                                scope=scope))
 
-# print(results)
-
-conn = sqlite3.connect('trackdb.sqlite')
 cur = conn.cursor()
-
 
 def create_tables():
     # Make some fresh tables using executescript()
-    cur.executescript('''
+    cur.execute('''
     DROP TABLE IF EXISTS Artist;
     DROP TABLE IF EXISTS Album;
     DROP TABLE IF EXISTS Track;
     DROP TABLE IF EXISTS Playlog;
     
     CREATE TABLE Artist (
-        id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-        name    TEXT UNIQUE
+        id  INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
+        artist_name nvarchar(200) UNIQUE
     );
     
     CREATE TABLE Album (
-        id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+        id  INTEGER NOT NULL PRIMARY KEY IDENTITY(1,1),
         artist_id  INTEGER,
-        title   TEXT UNIQUE
+        album_title   nvarchar(200) UNIQUE
     );
     
     CREATE TABLE Track (
         id  INTEGER NOT NULL PRIMARY KEY 
-            AUTOINCREMENT UNIQUE,
-        title TEXT  UNIQUE,
+            IDENTITY(1,1),
+        track_title nvarchar(200) UNIQUE,
         album_id  INTEGER,
         duration INTEGER, 
         popularity INTEGER, 
         count INTEGER,
-        last_played TEXT
+        last_played nvarchar(20)
     );
     
     CREATE TABLE Playlog (
         id INTEGER NOT NULL PRIMARY KEY
-           AUTOINCREMENT UNIQUE,
+           IDENTITY(1,1),
         track_id INTEGER,
         popularity INTEGER,
-        played_at TEXT UNIQUE
+        played_at nvarchar(20) UNIQUE
     );
     ''')
 
@@ -84,8 +101,6 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 if __name__ == "__main__":
 
     results = sp.current_user_recently_played()
-
-    # print(data)
 
     song_names = []
     artist_names = []
@@ -127,13 +142,13 @@ if __name__ == "__main__":
         print(song_df)
 
     df_loaded = pd.read_sql_query("""
-        SELECT played_at
+        SELECT TOP 1000 played_at
         FROM Playlog
         ORDER BY 1 DESC
-        LIMIT 1000 """, conn)
+        """, conn)
 
     if debug == 1:
-        print('Laddat data', df_loaded)
+        print('Loaded data', df_loaded)
 
     filtered_df = song_df[~song_df.played_at.isin(df_loaded.played_at)]
     print(filtered_df)
@@ -154,22 +169,35 @@ for index, row in filtered_df.iterrows():
     if debug == 1:
         print(name, artist, album, played_at, timestamp, duration, rating)
 
-    cur.execute('''INSERT OR IGNORE INTO Artist (name) 
-        VALUES ( ? )''', ( artist, ) )
-    cur.execute('SELECT id FROM Artist WHERE name = ? ', (artist, ))
+    cur.execute('''merge INTO 
+                        Artist with (holdlock) t
+                   using
+                        (VALUES ( ? )) s ([artist_name])
+                    on t.artist_name = s.artist_name
+                   when not matched then 
+                    insert values (s.artist_name);''', (artist,))
+    cur.execute('SELECT id FROM Artist WHERE artist_name = ? ', (artist, ))
     artist_id = cur.fetchone()[0]
 
-    cur.execute('''INSERT OR IGNORE INTO Album (title, artist_id) 
-        VALUES ( ?, ? )''', ( album, artist_id ) )
-    cur.execute('SELECT id FROM Album WHERE title = ? ', (album, ))
+    cur.execute('''merge INTO 
+                    Album with (holdlock) t
+                using
+                    (VALUES ( ?, ? )) s (artist_id, album_title)
+                on t.album_title = s.album_title
+                    and t.artist_id = s.artist_id
+                when not matched then 
+                    insert values (s.artist_id, s.album_title);
+                 
+        ''', (artist_id, album))
+    cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album, ))
     album_id = cur.fetchone()[0]
 
     try:
         cur.execute('''INSERT INTO Track
-            (title, album_id, duration, popularity, count, last_played) 
+            (track_title, album_id, duration, popularity, count, last_played) 
             VALUES ( ?, ?, ?, ?, ?, ?)''',
             ( name, album_id, round((duration/1000)/60, 2), rating, count, played_at) )
-        cur.execute('SELECT id FROM Track WHERE title = ? ', (name,))
+        cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
 
     except:
@@ -177,10 +205,10 @@ for index, row in filtered_df.iterrows():
                     SET count = count+1,
                     popularity = ?,
                     last_played = ?
-                    WHERE title = ?
+                    WHERE track_title = ?
                     AND last_played != ? ''',
                 (rating, played_at ,name, played_at))
-        cur.execute('SELECT id FROM Track WHERE title = ? ', (name,))
+        cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
 
 
