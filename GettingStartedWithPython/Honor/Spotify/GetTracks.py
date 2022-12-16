@@ -1,6 +1,6 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from Honor.Spotify.Credentials import cred
+from Honor.Spotify.credentials import cred
 import pandas as pd
 import sqlite3
 

@@ -1,43 +1,47 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from Honor.Spotify.Credentials import cred
+from Honor.Spotify.credentials import cred
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
+
 
 def read_credentials(fpath):
     #reads first line of a path
     fo = open(fpath, "r")
     return fo.readline()
 
-credentials_file_name = 'python'
-username = credentials_file_name
-password = read_credentials(f'./credentials/{username}.txt')
-driver = '{ODBC Driver 17 for SQL Server}'
-server = '34.88.195.162'
-database = 'Spotify'
 
-debug = 0
+def sql_connection():
+    credentials_file_name = 'python'
+    username = credentials_file_name
+    password = read_credentials(f'./credentials/{username}.txt')
+    driver = '{ODBC Driver 17 for SQL Server}'
+    #server = '34.88.195.162'
+    server = '192.168.0.245'
+    database = 'Spotify'
 
-# Tells spotipy what to get
-scope = "user-read-recently-played"
+    connection_string = f"Driver={driver};Server={server}; Database={database}; UID={username};PWD={password}"
+    connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
 
-connection_string = f"Driver={driver};Server={server}; Database={database}; UID={username};PWD={password}"
-connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+    sql_engine = create_engine(connection_url)
+    conn = sql_engine.raw_connection()
 
-sql_engine = create_engine(connection_url)
-
-conn = sql_engine.raw_connection()
+    return conn
 
 
-# Connection information for Spotify app setup: https://developer.spotify.com/dashboard/applications
-# https://www.section.io/engineering-education/spotify-python-part-1/
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.SPOTIPY_CLIENT_ID,
+def spotify_connection():
+    # Tells spotipy what to get
+    scope = "user-read-recently-played"
+
+    # Connection information for Spotify app setup: https://developer.spotify.com/dashboard/applications
+    # https://www.section.io/engineering-education/spotify-python-part-1/
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=cred.SPOTIPY_CLIENT_ID,
                                                client_secret=cred.SPOTIPY_CLIENT_SECRET,
                                                redirect_uri=cred.SPOTIPY_REDIRECT_URI,
                                                scope=scope))
+    return sp
 
-cur = conn.cursor()
 
 def create_tables():
     # Make some fresh tables using executescript()
@@ -97,6 +101,15 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 
     return True
 
+debug = 0
+
+# Connection for the SQL database
+conn = sql_connection()
+cur = conn.cursor()
+
+# Connection to the Spotify API
+sp = spotify_connection()
+
 
 if __name__ == "__main__":
 
@@ -142,7 +155,7 @@ if __name__ == "__main__":
         print(song_df)
 
     df_loaded = pd.read_sql_query("""
-        SELECT TOP 1000 played_at
+        SELECT TOP 100 played_at
         FROM Playlog
         ORDER BY 1 DESC
         """, conn)
@@ -151,7 +164,7 @@ if __name__ == "__main__":
         print('Loaded data', df_loaded)
 
     filtered_df = song_df[~song_df.played_at.isin(df_loaded.played_at)]
-    print(filtered_df)
+    print('Tracks to be added:\n', filtered_df)
 
 for index, row in filtered_df.iterrows():
     name = row['song_name']
@@ -188,7 +201,7 @@ for index, row in filtered_df.iterrows():
                 when not matched then 
                     insert values (s.artist_id, s.album_title);
                  
-        ''', (artist_id, album))
+                ''', (artist_id, album))
     cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album, ))
     album_id = cur.fetchone()[0]
 
