@@ -1,6 +1,6 @@
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from Honor.Spotify.credentials import cred
+import cred
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
@@ -122,6 +122,7 @@ if __name__ == "__main__":
     timestamps = []
     popularity = []
     duration_ms = []
+    track_ids = []
 
     # Extracting only the relevant bits of data from the json object
     for song in results["items"]:
@@ -132,6 +133,7 @@ if __name__ == "__main__":
         album_names.append(song["track"]["album"]["name"])
         popularity.append(song["track"]["popularity"])
         duration_ms.append(song["track"]["duration_ms"])
+        track_ids.append(song["track"]["id"])
 
     # Prepare a dictionary in order to turn it into a pandas dataframe below
     song_dict = {
@@ -141,11 +143,12 @@ if __name__ == "__main__":
         "timestamp": timestamps,
         "album_name": album_names,
         "popularity": popularity,
-        "duration": duration_ms
+        "duration": duration_ms,
+        "track_id": track_ids
     }
 
     song_df = pd.DataFrame(song_dict, columns=["song_name", "artist_name", "played_at", "timestamp", "album_name",
-                                               "popularity", "duration"])
+                                               "popularity", "duration", "track_id"])
 
     # Validate
     if check_if_valid_data(song_df):
@@ -174,6 +177,7 @@ for index, row in filtered_df.iterrows():
     timestamp = row['timestamp']
     duration = row['duration']
     rating = row['popularity']
+    track_id = row['track_id']
     count = 1
 
     if name is None or artist is None or album is None :
@@ -207,9 +211,9 @@ for index, row in filtered_df.iterrows():
 
     try:
         cur.execute('''INSERT INTO Track
-            (track_title, album_id, duration, popularity, count, last_played) 
-            VALUES ( ?, ?, ?, ?, ?, ?)''',
-            ( name, album_id, round((duration/1000)/60, 2), rating, count, played_at) )
+            (track_title, album_id, duration, popularity, count, last_played, track_id) 
+            VALUES ( ?, ?, ?, ?, ?, ?, ?)''',
+            ( name, album_id, round((duration/1000)/60, 2), rating, count, played_at, track_id) )
         cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
 
@@ -217,10 +221,11 @@ for index, row in filtered_df.iterrows():
         cur.execute(''' UPDATE Track
                     SET count = count+1,
                     popularity = ?,
-                    last_played = ?
+                    last_played = ?,
+                    track_id = ?
                     WHERE track_title = ?
                     AND last_played != ? ''',
-                (rating, played_at ,name, played_at))
+                (rating, played_at ,name, played_at, track_id))
         cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
 
