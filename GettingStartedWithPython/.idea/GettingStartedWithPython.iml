@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-<<<<<<< HEAD
-    <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/venv" />
-    </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (GettingStartedWithPython)" jdkType="Python SDK" />
-=======
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="3.8 @ Ubuntu" jdkType="Python SDK" />
->>>>>>> 9369190e89291d80d3d7ae58a7e510d6bd0ead2e
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="PLAIN" />
+    <option name="myDocStringFormat" value="Plain" />
   </component>
 </module>

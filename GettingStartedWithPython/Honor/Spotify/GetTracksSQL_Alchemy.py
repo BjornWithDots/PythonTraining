@@ -123,6 +123,8 @@ if __name__ == "__main__":
     popularity = []
     duration_ms = []
     track_ids = []
+    artist_ids = []
+    album_ids = []
 
     # Extracting only the relevant bits of data from the json object
     for song in results["items"]:
@@ -134,6 +136,8 @@ if __name__ == "__main__":
         popularity.append(song["track"]["popularity"])
         duration_ms.append(song["track"]["duration_ms"])
         track_ids.append(song["track"]["id"])
+        artist_ids.append(song["track"]["album"]["artists"][0]["id"])
+        album_ids.append(song["track"]["album"]["id"])
 
     # Prepare a dictionary in order to turn it into a pandas dataframe below
     song_dict = {
@@ -144,11 +148,13 @@ if __name__ == "__main__":
         "album_name": album_names,
         "popularity": popularity,
         "duration": duration_ms,
-        "track_id": track_ids
+        "track_id": track_ids,
+        "artist_id": artist_ids,
+        "album_id": album_ids
     }
 
     song_df = pd.DataFrame(song_dict, columns=["song_name", "artist_name", "played_at", "timestamp", "album_name",
-                                               "popularity", "duration", "track_id"])
+                                               "popularity", "duration", "track_id", "artist_id", "album_id"])
 
     # Validate
     if check_if_valid_data(song_df):
@@ -178,6 +184,8 @@ for index, row in filtered_df.iterrows():
     duration = row['duration']
     rating = row['popularity']
     track_id = row['track_id']
+    album_id = row['album_id']
+    artist_id = row['artist_id']
     count = 1
 
     if name is None or artist is None or album is None :
@@ -189,23 +197,27 @@ for index, row in filtered_df.iterrows():
     cur.execute('''merge INTO 
                         Artist with (holdlock) t
                    using
-                        (VALUES ( ? )) s ([artist_name])
-                    on t.artist_name = s.artist_name
+                        (VALUES ( ?, ? )) s ([artist_name],[artist_id])
+                   on t.artist_name = s.artist_name
                    when not matched then 
-                    insert values (s.artist_name);''', (artist,))
+                        insert values (s.artist_name, s.artist_id)
+                   when matched THEN UPDATE SET
+                        t.artist_id = s.artist_id;
+                    ''', (artist, artist_id))
     cur.execute('SELECT id FROM Artist WHERE artist_name = ? ', (artist, ))
     artist_id = cur.fetchone()[0]
 
     cur.execute('''merge INTO 
                     Album with (holdlock) t
                 using
-                    (VALUES ( ?, ? )) s (artist_id, album_title)
+                    (VALUES ( ?, ?, ? )) s (artist_id, album_title, album_id)
                 on t.album_title = s.album_title
                     and t.artist_id = s.artist_id
                 when not matched then 
-                    insert values (s.artist_id, s.album_title);
-                 
-                ''', (artist_id, album))
+                    insert values (s.artist_id, s.album_title, s.album_id)
+                when matched THEN UPDATE SET
+                    t.album_id = s.album_id;                 
+                ''', (artist_id, album, album_id))
     cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album, ))
     album_id = cur.fetchone()[0]
 
