@@ -216,8 +216,10 @@ for index, row in filtered_df.iterrows():
             ( name, album_id, round((duration/1000)/60, 2), rating, count, played_at, track_id) )
         cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
+        print("Inserting track:", name)
 
     except:
+        print("Failed insert trying update.......")
         cur.execute(''' UPDATE Track
                     SET count = count+1,
                     popularity = ?,
@@ -225,9 +227,10 @@ for index, row in filtered_df.iterrows():
                     track_id = ?
                     WHERE track_title = ?
                     AND last_played != ? ''',
-                (rating, played_at ,name, played_at, track_id))
+                (rating, played_at , track_id, name, played_at))
         cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
         track_id = cur.fetchone()[0]
+        print("Updating track", name)
 
 
     cur.execute('''INSERT INTO Playlog
