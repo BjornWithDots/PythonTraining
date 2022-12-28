@@ -42,7 +42,7 @@ for (message_id, message) in list(messages.items()):
     if len(pieces) != 2 : continue
     dns = pieces[1]
     if dns not in orgs : continue
-    month = message[3][:4]
+    month = message[3][:7]
     if month not in months : months.append(month)
     key = (month, dns)
     counts[key] = counts.get(key,0) + 1
@@ -54,12 +54,13 @@ months.sort()
 # print months
 
 fhand = open('gline.js','w')
-fhand.write("gline = [ ['Year'")
+fhand.write("gline = [ ['YearMonth'")
 for org in orgs:
     fhand.write(",'"+org+"'")
 fhand.write("]")
 
 for month in months[1:-1]:
+    print('Month',month)
     fhand.write(",\n['"+month+"'")
     for org in orgs:
         key = (month, org)

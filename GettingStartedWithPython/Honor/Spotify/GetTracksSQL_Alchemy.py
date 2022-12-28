@@ -7,7 +7,7 @@ from sqlalchemy.engine import URL
 
 
 def read_credentials(fpath):
-    #reads first line of a path
+    # reads first line of a path
     fo = open(fpath, "r")
     return fo.readline()
 
@@ -17,7 +17,7 @@ def sql_connection():
     username = credentials_file_name
     password = read_credentials(f'./credentials/{username}.txt')
     driver = '{ODBC Driver 17 for SQL Server}'
-    #server = '34.88.195.162'
+    # server = '34.88.195.162'
     server = '192.168.0.245'
     database = 'Spotify'
 
