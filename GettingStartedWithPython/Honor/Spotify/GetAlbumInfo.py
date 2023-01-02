@@ -42,7 +42,7 @@ conn = sql_connection()
 cur = conn.cursor()
 
 df_artist = pd.read_sql_query("""
-        SELECT DISTINCT TOP 10 artist.artist_id
+        SELECT DISTINCT TOP 5 artist.artist_id
         FROM Album album
             inner join Artist artist
                 on album.artist_id = artist.id
@@ -58,41 +58,54 @@ sp = spotify_connection()
 album_names = []
 album_ids = []
 
-for artist in df_artist["artist_id"]:
-    artist_uri = 'spotify:artist:'+artist
+def getspinfo(type):
 
-    results = sp.artist_albums(artist_uri, album_type='album')
 
-    album_names = []
-    album_ids = []
+    for artist in df_artist["artist_id"]:
+        artist_uri = 'spotify:artist:'+artist
 
-    albums = results['items']
+        #results = sp.artist_albums(artist_uri, album_type='album')
+
+        results =  sp.artist_albums(artist_uri, album_type=type)
+
+#[{'album_id':item['id'], 'album_name':item['name']} for item in results['items']]
+
+        album_names = []
+        album_ids = []
+#    albumlist ={}
+
+        albums = results['items']
     #print(albums)
-    while results['next']:
-        results = sp.next(results)
-        albums.extend(results['items'])
+        while results['next']:
+            results = sp.next(results)
+            albums.extend(results['items'])
 
-    for album in results["items"]:
-        album_names.append(album["name"])
-        album_ids.append(album["id"])
+        for album in albums:
+            #print(album['name'], album['id'])
+            album_name = album['name']
+            album_id = album['id']
 
-    print(album_names)
+            cur.execute('''merge INTO
+                            Album with (holdlock) t
+                        using
+                            (VALUES ( ?, ? )) s (album_title, album_id)
+                        on t.album_title = s.album_title
+                        and t.album_id is null
 
-    #for album in albums:
-    #    print(album['name'], album['id'])
+                        --when not matched then
+                        --    insert values (s.album_title, s.album_id)
+                        when matched THEN UPDATE SET
+                            t.album_id = s.album_id;
+                        ''', (album_name, album_id))
+            try:
+                cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album_name,))
+                album_key = cur.fetchone()[0]
+                print('Albumname:', album_name, 'Albumid', album_id)
+            except:
+                print('Havent listen to:', album_name)
 
-        # cur.execute('''merge INTO
-        #                     AlbumsUpdate with (holdlock) t
-        #                 using
-        #                     (VALUES ( ?, ? )) s (album_title, album_id)
-        #                 on t.album_id = s.album_id
-        #
-        #                 when not matched then
-        #                     insert values (s.album_title, s.album_id)
-        #                 when matched THEN UPDATE SET
-        #                     t.album_id = s.album_id;
-        #                 ''', (album_name, album_id))
-        # cur.execute('SELECT album_id FROM AlbumsUpdate WHERE album_title = ? ', (album_name,))
-        # album_key = cur.fetchone()[0]
-        #
-        # print('Albumname:',album_name, 'Albumid',album_id )
+            conn.commit()
+
+getspinfo('single')
+getspinfo('album')
+getspinfo('compilation')

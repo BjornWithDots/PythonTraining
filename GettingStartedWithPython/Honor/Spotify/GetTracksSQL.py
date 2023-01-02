@@ -13,7 +13,7 @@ credentials_file_name = 'python'
 username = credentials_file_name
 password = read_credentials(f'./credentials/{username}.txt')
 driver = '{ODBC Driver 17 for SQL Server}'
-server = '34.88.195.162'
+server = '192.168.0.245'
 database = 'Spotify'
 
 debug = 0
