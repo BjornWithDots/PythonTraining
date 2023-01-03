@@ -41,13 +41,13 @@ def spotify_connection():
 conn = sql_connection()
 cur = conn.cursor()
 
-df_artist = pd.read_sql_query("""
-        SELECT DISTINCT TOP 5 artist.artist_id
+df_album = pd.read_sql_query("""
+        SELECT DISTINCT TOP 5 album.album_id
         FROM Album album
-            inner join Artist artist
-                on album.artist_id = artist.id
-        WHERE  album_id is null
-            and artist.artist_id is not null
+            inner join Track track
+                on album.id = track.album_id
+        WHERE   album.album_id is not null
+				and track.track_id is null
         ORDER BY 1 DESC
         """, conn)
 
@@ -55,18 +55,18 @@ df_artist = pd.read_sql_query("""
 # Connection to the Spotify API
 sp = spotify_connection()
 
-album_names = []
-album_ids = []
+track_names = []
+track_ids = []
 
 def getspinfo(type):
 
 
-    for artist in df_artist["artist_id"]:
-        artist_uri = 'spotify:artist:'+artist
+    for album in df_album["album_id"]:
+        album_uri = 'spotify:album:'+album
 
-        #results = sp.artist_albums(artist_uri, album_type='album')
+        results = sp.artist_albums(album_uri, album_type='album')
 
-        results =  sp.artist_albums(artist_uri, album_type=type)
+        #results =  sp.artist_albums(artist_uri, album_type=type)
 
 #[{'album_id':item['id'], 'album_name':item['name']} for item in results['items']]
 
@@ -98,7 +98,7 @@ def getspinfo(type):
                             t.album_id = s.album_id;
                         ''', (album_name, album_id))
             try:
-                cur.execute('SELECT id FROM Album WHERE album_id = ? ', (album_id,))
+                cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album_name,))
                 album_key = cur.fetchone()[0]
                 print('Albumname:', album_name, 'Albumid', album_id)
             except:

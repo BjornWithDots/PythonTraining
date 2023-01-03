@@ -4,6 +4,7 @@ import cred
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 import pandas as pd
+import sys
 
 def read_credentials(fpath):
     # reads first line of a path
@@ -54,29 +55,15 @@ df_artist = pd.read_sql_query("""
 
 # Connection to the Spotify API
 sp = spotify_connection()
+# shows tracks for the given artist
 
-album_names = []
-album_ids = []
+# usage: python tracks.py [artist name]
 
-for artist in df_artist["artist_id"]:
-    artist_uri = 'spotify:artist:'+artist
 
-    results = sp.artist_albums(artist_uri, album_type='album')
-
-    album_names = []
-    album_ids = []
-
-    albums = results['items']
-    #print(albums)
-    while results['next']:
-        results = sp.next(results)
-        albums.extend(results['items'])
-
-    for album in results["items"]:
-        album_names.append(album["name"])
-        album_ids.append(album["id"])
-
-    print(album_names)
+artist_name = 'Mitt bästa för dig + Hanna Ivarsson'
+results = sp.search(q=artist_name, limit=20)
+for i, t in enumerate(results['tracks']['items']):
+    print(' ', i, t['name'], t['id'])
 
     #for album in albums:
     #    print(album['name'], album['id'])
