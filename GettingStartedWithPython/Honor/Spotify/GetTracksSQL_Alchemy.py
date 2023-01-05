@@ -225,7 +225,7 @@ for index, row in filtered_df.iterrows():
         cur.execute('''INSERT INTO Track
             (track_title, album_id, duration, popularity, count, last_played, track_id) 
             VALUES ( ?, ?, ?, ?, ?, ?, ?)''',
-            ( name, album_id, round((duration/1000), 2), rating, count, played_at, track_id) )
+            ( name, album_id, round((float(duration)/1000), 2), rating, count, played_at, track_id) )
         cur.execute('SELECT id FROM Track WHERE track_id = ? ', (track_id,))
         track_id = cur.fetchone()[0]
         print("Inserting track:", name)
@@ -240,7 +240,7 @@ for index, row in filtered_df.iterrows():
                     duration = ?
                     WHERE track_id = ?
                     AND last_played != ? ''',
-                (rating, played_at, name, round((duration/1000), 2), track_id, played_at))
+                (rating, played_at, name, round((float(duration)/1000), 2), track_id, played_at))
         cur.execute('SELECT id FROM Track WHERE track_id = ? ', (track_id,))
         track_id = cur.fetchone()[0]
         print("Updating track", name)

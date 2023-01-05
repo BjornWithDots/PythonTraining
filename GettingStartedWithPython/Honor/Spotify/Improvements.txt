@@ -1,1 +1,11 @@
 Artist:
+ Get
+    genres
+    popularity?
+    images?
+
+ Album:
+  Get
+    genres ?
+    popularity?
+    release_date
