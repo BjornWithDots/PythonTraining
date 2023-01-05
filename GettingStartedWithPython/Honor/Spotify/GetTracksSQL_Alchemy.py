@@ -236,10 +236,11 @@ for index, row in filtered_df.iterrows():
                     SET count = count+1,
                     popularity = ?,
                     last_played = ?,
-                    track_title = ?
+                    track_title = ?,
+                    duration = ?
                     WHERE track_id = ?
                     AND last_played != ? ''',
-                (rating, played_at , name ,track_id, played_at))
+                (rating, played_at, name, round((duration/1000)/60, 2), track_id, played_at))
         cur.execute('SELECT id FROM Track WHERE track_id = ? ', (track_id,))
         track_id = cur.fetchone()[0]
         print("Updating track", name)
