@@ -42,14 +42,11 @@ def spotify_connection():
 conn = sql_connection()
 cur = conn.cursor()
 
-df_artist = pd.read_sql_query("""
-        SELECT DISTINCT TOP 10 artist.artist_id
-        FROM Album album
-            inner join Artist artist
-                on album.artist_id = artist.id
-        WHERE  album_id is null
-            and artist.artist_id is not null
-        ORDER BY 1 DESC
+df_querys = pd.read_sql_query("""
+    SELECT top 5 Artist +' '+ Album +' '+ Track
+    FROM Spotify.dbo.v_Track
+    where track_id is null
+    order by 1
         """, conn)
 
 
@@ -59,11 +56,12 @@ sp = spotify_connection()
 
 # usage: python tracks.py [artist name]
 
-
-artist_name = 'Mitt bästa för dig + Hanna Ivarsson'
-results = sp.search(q=artist_name, limit=20)
-for i, t in enumerate(results['tracks']['items']):
-    print(' ', i, t['name'], t['id'])
+for i, query in df_querys.iterrows():
+    #artist_name = 'Fun Boy Three Fun Boy Three The Lunatics (Have Taken over the Asylum)'
+    print(query[0])
+    results = sp.search(q=query[0], limit=1)
+    for i, t in enumerate(results['tracks']['items']):
+        print(' ', i, t['name'], t['id'])
 
     #for album in albums:
     #    print(album['name'], album['id'])
