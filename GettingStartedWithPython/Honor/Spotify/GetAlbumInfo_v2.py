@@ -43,9 +43,11 @@ conn = sql_connection()
 cur = conn.cursor()
 
 df_querys = pd.read_sql_query("""
-    SELECT top 50 Artist +' '+ Album +' '+ Track
-    FROM Spotify.dbo.v_Track
-    where track_id is null
+    SELECT TOP (20) artist.artist_name + ' ' + [album_title]
+    FROM [Spotify].[dbo].[Album] album
+    inner join Artist artist
+	    on album.artist_id = artist.id
+	where album_id is null
     order by 1
         """, conn)
 
@@ -61,20 +63,17 @@ for i, query in df_querys.iterrows():
     print(query[0])
     results = sp.search(q=query[0], limit=1)
     for i, t in enumerate(results['tracks']['items']):
-        print(' ', i, t['name'], t['id'])
+        print(' ', i, t['album']['name'], t['album']['id'])
         #print('Track:', t['name'])
 
         cur.execute('''merge INTO
-                            Track with (holdlock) t
+                            Album with (holdlock) t
                         using
-                            (VALUES ( ?, ? )) s (track_title, track_id)
-                        on t.track_title = s.track_title
-                        and t.track_id is null
+                            (VALUES ( ?, ? )) s (album_title, album_id)
+                        on t.album_title = s.album_title
+                        and t.album_id is null
                         when matched THEN UPDATE SET
-                            t.track_id = s.track_id;
-                        ''', (t['name'], t['id']))
-        # cur.execute('SELECT album_id FROM AlbumsUpdate WHERE album_title = ? ', (album_name,))
-        # album_key = cur.fetchone()[0]
-        #
-        # print('Albumname:',album_name, 'Albumid',album_id )
+                            t.album_id = s.album_id;
+                        ''', (t['album']['name'], t['album']['id']))
+
         conn.commit()

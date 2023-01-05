@@ -198,27 +198,27 @@ for index, row in filtered_df.iterrows():
                         Artist with (holdlock) t
                    using
                         (VALUES ( ?, ? )) s ([artist_name],[artist_id])
-                   on t.artist_name = s.artist_name
+                   on t.artist_id = s.artist_id
                    when not matched then 
                         insert values (s.artist_name, s.artist_id)
                    when matched THEN UPDATE SET
-                        t.artist_id = s.artist_id;
+                        t.artist_name = s.artist_name;
                     ''', (artist, artist_id))
-    cur.execute('SELECT id FROM Artist WHERE artist_name = ? ', (artist, ))
+    cur.execute('SELECT id FROM Artist WHERE artist_id = ? ', (artist_id, ))
     artist_id = cur.fetchone()[0]
 
     cur.execute('''merge INTO 
                     Album with (holdlock) t
                 using
                     (VALUES ( ?, ?, ? )) s (artist_id, album_title, album_id)
-                on t.album_title = s.album_title
+                on t.album_id = s.album_id
                     and t.artist_id = s.artist_id
                 when not matched then 
                     insert values (s.artist_id, s.album_title, s.album_id)
                 when matched THEN UPDATE SET
-                    t.album_id = s.album_id;                 
+                    t.album_title = s.album_title;                 
                 ''', (artist_id, album, album_id))
-    cur.execute('SELECT id FROM Album WHERE album_title = ? ', (album, ))
+    cur.execute('SELECT id FROM Album WHERE album_id = ? ', (album_id, ))
     album_id = cur.fetchone()[0]
 
     try:
@@ -226,7 +226,7 @@ for index, row in filtered_df.iterrows():
             (track_title, album_id, duration, popularity, count, last_played, track_id) 
             VALUES ( ?, ?, ?, ?, ?, ?, ?)''',
             ( name, album_id, round((duration/1000)/60, 2), rating, count, played_at, track_id) )
-        cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
+        cur.execute('SELECT id FROM Track WHERE track_id = ? ', (track_id,))
         track_id = cur.fetchone()[0]
         print("Inserting track:", name)
 
@@ -236,11 +236,11 @@ for index, row in filtered_df.iterrows():
                     SET count = count+1,
                     popularity = ?,
                     last_played = ?,
-                    track_id = ?
-                    WHERE track_title = ?
+                    track_title = ?
+                    WHERE track_id = ?
                     AND last_played != ? ''',
-                (rating, played_at , track_id, name, played_at))
-        cur.execute('SELECT id FROM Track WHERE track_title = ? ', (name,))
+                (rating, played_at , name ,track_id, played_at))
+        cur.execute('SELECT id FROM Track WHERE track_id = ? ', (track_id,))
         track_id = cur.fetchone()[0]
         print("Updating track", name)
 
