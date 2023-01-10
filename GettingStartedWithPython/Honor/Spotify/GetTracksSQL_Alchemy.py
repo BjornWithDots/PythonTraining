@@ -45,6 +45,7 @@ def spotify_connection():
 
 def create_tables():
     # Make some fresh tables using executescript()
+    # TODO: Uppdatera scripten så de innehåller id
     cur.execute('''
     DROP TABLE IF EXISTS Artist;
     DROP TABLE IF EXISTS Album;
