@@ -42,11 +42,10 @@ def spotify_connection():
 conn = sql_connection()
 cur = conn.cursor()
 
-df_querys = pd.read_sql_query("""
-    SELECT TOP (30) artist.artist_name
-    FROM [Spotify].[dbo].Artist artist
-    where artist_id is null
-    order by 1
+df_tracks = pd.read_sql_query("""
+    SELECT top 10 track_id
+    FROM Spotify.dbo.Track
+    where energy is null
         """, conn)
 
 
@@ -56,23 +55,19 @@ sp = spotify_connection()
 
 # usage: python tracks.py [artist name]
 
-for i, query in df_querys.iterrows():
-    print(query[0])
-    results = sp.search(q=query[0], limit=10)
-    for i, t in enumerate(results['tracks']['items']):
-        #print(' ', i, t['album']['artists']['name'], t['album']['artists']['id'])
-        for i2, t2 in enumerate(t['artists']):
-            print(' ', i2, t2['name'], t2['id'])
-        #print('Track:', t['name'])
+for i, track in df_tracks.iterrows():
+    print(track[0])
+    results = sp.audio_features(tracks=track)
+    print(results)
 
-        cur.execute('''merge INTO
-                            Artist with (holdlock) t
-                        using
-                            (VALUES ( ?, ? )) s (artist_name, artist_id)
-                        on t.artist_name = s.artist_name
-                        and t.artist_id is null
-                        when matched THEN UPDATE SET
-                            t.artist_id = s.artist_id;
-                        ''', (t2['name'], t2['id']))
-
-        conn.commit()
+        # cur.execute('''merge INTO
+        #                     Artist with (holdlock) t
+        #                 using
+        #                     (VALUES ( ?, ? )) s (artist_name, artist_id)
+        #                 on t.artist_name = s.artist_name
+        #                 and t.artist_id is null
+        #                 when matched THEN UPDATE SET
+        #                     t.artist_id = s.artist_id;
+        #                 ''', (t2['name'], t2['id']))
+        #
+        # conn.commit()
