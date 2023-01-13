@@ -151,7 +151,7 @@ class TestEntitySubstitution(unittest.TestCase):
 
     def test_smart_quote_substitution(self):
         # MS smart quotes are a common source of frustration, so we
-        # give them a special test.
+        # give them a special test.py.
         quotes = b"\x91\x92foo\x93\x94"
         dammit = UnicodeDammit(quotes)
         self.assertEqual(self.sub.substitute_html(dammit.markup),
@@ -261,7 +261,7 @@ class TestEncodingConversion(SoupTest):
 
     @skipIf(
         PYTHON_2_PRE_2_7 or PYTHON_3_PRE_3_2,
-        "Bad HTMLParser detected; skipping test of non-ASCII characters in attribute name.")
+        "Bad HTMLParser detected; skipping test.py of non-ASCII characters in attribute name.")
     def test_attribute_name_containing_unicode_characters(self):
         markup = '<div><a \N{SNOWMAN}="snowman"></a></div>'
         self.assertEqual(self.soup(markup).div.encode("utf8"), markup.encode("utf8"))

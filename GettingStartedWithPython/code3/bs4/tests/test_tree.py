@@ -1280,7 +1280,7 @@ class TestCDAtaListAttributes(SoupTest):
     def test_cdata_attribute_applying_only_to_one_tag(self):
         data = '<a accept-charset="ISO-8859-1 UTF-8"></a>'
         soup = self.soup(data)
-        # We saw in another test that accept-charset is a cdata-list
+        # We saw in another test.py that accept-charset is a cdata-list
         # attribute for the <form> tag. But it's not a cdata-list
         # attribute for any other tag.
         self.assertEqual('ISO-8859-1 UTF-8', soup.a['accept-charset'])
@@ -1522,7 +1522,7 @@ class TestSubstitutions(SoupTest):
                     'http-equiv="Content-type"/></head><pre>foo</pre>')
 
         # Beautiful Soup used to try to rewrite the meta tag even if the
-        # meta tag got filtered out by the strainer. This test makes
+        # meta tag got filtered out by the strainer. This test.py makes
         # sure that doesn't happen.
         strainer = SoupStrainer('pre')
         soup = self.soup(markup, parse_only=strainer)
@@ -1646,7 +1646,7 @@ class TestSoupSelector(TreeTest):
 <a id="me" href="http://simonwillison.net/" rel="me">me</a>
 <span class="s1">
 <a href="#" id="s1a1">span1a1</a>
-<a href="#" id="s1a2">span1a2 <span id="s1a2s1">test</span></a>
+<a href="#" id="s1a2">span1a2 <span id="s1a2s1">test.py</span></a>
 <span class="span2">
 <a href="#" id="s2a1">span2a1</a>
 </span>
@@ -1873,7 +1873,7 @@ class TestSoupSelector(TreeTest):
             ('[id*="1"]', ['data1', 'l1', 'p1', 'header1', 's1a1', 's1a2', 's2a1', 's1a2s1', 'dash1']),
             ('div[id*="1"]', ['data1']),
             ('[id*="noending"]', []),
-            # New for this test
+            # New for this test.py
             ('[href*="."]', ['bob', 'me', 'l1']),
             ('a[href*="."]', ['bob', 'me']),
             ('link[href*="."]', ['l1']),
