@@ -47,11 +47,11 @@ class LXMLTreeBuilderSmokeTest(SoupTest, HTMLTreeBuilderSmokeTest):
             "<p>foo&#1000000000;bar</p>", "<p>foobar</p>")
 
     # In lxml < 2.3.5, an empty doctype causes a segfault. Skip this
-    # test if an old version of lxml is installed.
+    # test.py if an old version of lxml is installed.
 
     @skipIf(
         not LXML_PRESENT or LXML_VERSION < (2,3,5,0),
-        "Skipping doctype test for old version of lxml to avoid segfault.")
+        "Skipping doctype test.py for old version of lxml to avoid segfault.")
     def test_empty_doctype(self):
         soup = self.soup("<!DOCTYPE>")
         doctype = soup.contents[0]

@@ -57,7 +57,7 @@ class SoupTest(unittest.TestCase):
 
 class HTMLTreeBuilderSmokeTest(object):
 
-    """A basic test of a treebuilder's competence.
+    """A basic test.py of a treebuilder's competence.
 
     Any HTML treebuilder, present or future, should be able to pass
     these tests. With invalid markup, there's room for interpretation,
@@ -184,7 +184,7 @@ class HTMLTreeBuilderSmokeTest(object):
         html = '''<!DOCTYPE html>
 <html>
 <head>
-<title>Ordinary HEAD element test</title>
+<title>Ordinary HEAD element test.py</title>
 </head>
 <script type="text/javascript">
 alert("Help!");
@@ -429,14 +429,14 @@ Hello, world!
         self.assertEqual(soup.p.encode("utf-8"), expected)
 
     def test_real_iso_latin_document(self):
-        # Smoke test of interrelated functionality, using an
+        # Smoke test.py of interrelated functionality, using an
         # easy-to-understand document.
 
         # Here it is in Unicode. Note that it claims to be in ISO-Latin-1.
         unicode_html = '<html><head><meta content="text/html; charset=ISO-Latin-1" http-equiv="Content-type"/></head><body><p>Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!</p></body></html>'
 
         # That's because we're going to encode it into ISO-Latin-1, and use
-        # that to test.
+        # that to test.py.
         iso_latin_html = unicode_html.encode("iso-8859-1")
 
         # Parse the ISO-Latin-1 HTML.
@@ -456,7 +456,7 @@ Hello, world!
         self.assertEqual(result, expected)
 
     def test_real_shift_jis_document(self):
-        # Smoke test to make sure the parser can handle a document in
+        # Smoke test.py to make sure the parser can handle a document in
         # Shift-JIS encoding, without choking.
         shift_jis_html = (
             b'<html><head></head><body><pre>'
@@ -473,7 +473,7 @@ Hello, world!
         self.assertEqual(soup.encode("euc_jp"), unicode_html.encode("euc_jp"))
 
     def test_real_hebrew_document(self):
-        # A real-world test to make sure we can convert ISO-8859-9 (a
+        # A real-world test.py to make sure we can convert ISO-8859-9 (a
         # Hebrew encoding) to UTF-8.
         hebrew_document = b'<html><head><title>Hebrew (ISO 8859-8) in Visual Directionality</title></head><body><h1>Hebrew (ISO 8859-8) in Visual Directionality</h1>\xed\xe5\xec\xf9</body></html>'
         soup = self.soup(
@@ -633,7 +633,7 @@ class XMLTreeBuilderSmokeTest(object):
         self.assertEqual(str(soup.foo), markup)
 
 class HTML5TreeBuilderSmokeTest(HTMLTreeBuilderSmokeTest):
-    """Smoke test for a tree builder that supports HTML5."""
+    """Smoke test.py for a tree builder that supports HTML5."""
 
     def test_real_xhtml_document(self):
         # Since XHTML is not HTML5, HTML5 parsers are not tested to handle
