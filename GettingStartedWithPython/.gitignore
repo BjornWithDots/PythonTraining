@@ -4,4 +4,8 @@ __pychache__/
 hidden.py
 cred.py
 .cache
+<<<<<<< HEAD
 .idea
+=======
+.DS_Store
+>>>>>>> 1a905667fb46ad41fb04f44381e569c55ccfebcd

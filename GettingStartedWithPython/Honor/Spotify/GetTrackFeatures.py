@@ -43,7 +43,7 @@ conn = sql_connection()
 cur = conn.cursor()
 
 df_tracks = pd.read_sql_query("""
-    SELECT top 10 track_id
+    SELECT top 100 track_id
     FROM Spotify.dbo.Track
     where energy is null
         """, conn)
@@ -59,7 +59,7 @@ for i, track in df_tracks.iterrows():
     print(track[0])
     results = sp.audio_features(tracks=track)
     info = (results[0])
-    print(info['danceability'])
+    #print(info['danceability'])
 
     cur.execute('''merge INTO
                             Track with (holdlock) t
