@@ -106,7 +106,7 @@ debug = 0
 
 # Connection for the SQL database
 conn = sql_connection()
-cur = conn.cursor()
+#cur = conn.cursor()
 
 # Connection to the Spotify API
 sp = spotify_connection()
